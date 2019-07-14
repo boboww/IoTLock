@@ -1,8 +1,8 @@
 #include <xc.h>
-//#include <stdio.h>
-//#include <stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-//#include <pic18f45k50.h>
+#include <pic18f45k50.h>
 
 #define _XTAL_FREQ 1000000
 
@@ -37,23 +37,25 @@ unsigned char data[30]="Test";
 unsigned int i=0;
 
 void main(void) {
-    TRISA   = 0xF0;    // Configure Port A as output port
+    TRISA   = 0xF0;         // Configure Port A as output/input
     LATA    = 0x00;
     PORTA   = 0x00;
-    TRISB   = 0x00;    // configure Port B as input port
+    TRISB   = 0x00;         // configure Port B as input port
     LATB    = 0x00;
     PORTB   = 0x00;
-    TRISC   = 0x00;    // Configure Port C as output port
+    TRISC   = 0x00;         // Configure Port C as output port
     LATC    = 0x00;
     PORTC   = 0x00; 
-    TRISD   = 0x00;    // Configure Port D as output port
+    TRISD   = 0x00;         // Configure Port D as output port
     LATD    = 0x00;
     PORTD   = 0x00;
-    TRISE   = 0x00;    // Configure Port E as output port
+    TRISE   = 0x00;         // Configure Port E as output port
     LATE    = 0x00;
     PORTE   = 0x00;
+    
+    ANSELA  = 0x00;     // RA5 column wasn't working for keypad
         
-    lcd_ini(); // LCD initialization //    
+    lcd_ini();          // LCD initialization   
     unsigned char r;
     int i = 0;
     
@@ -66,31 +68,29 @@ void main(void) {
             r = readKeyboard(i);
             if(r != ' ')
                 writeString(r);
-        //__delay_ms(500);
-        //lcdcmd(0x01); // Clear display screen
+            //__delay_ms(500);
+            //lcdcmd(0x01);     // Clear display screen
         }
     }
     return;
 }
 
-// This function writes a string to LCD 1 byte at time
-// Pass variable data to this function)
-void writeString(unsigned char sendData){
+void writeString(unsigned char sendData){   // Writes string to LCD 1 byte at time
     unsigned int i = 0;
     //while(sendData[i]!='\0'){
-        lcddata(sendData);//[i]); // Call lcddata function to send characters
+        lcddata(sendData);//[i]);           // Call lcddata function to send characters
         // one by one from "data" array
         //i++;
-        __delay_ms(20);
+        //__delay_ms(20);
     //}
 }
 
 void lcd_ini(){
-    lcdcmd(0x38); // Configure the LCD in 8-bit mode, 2 line and 5x7 font
-    lcdcmd(0x0C); // Display On and Cursor Off
-    lcdcmd(0x01); // Clear display screen
-    lcdcmd(0x06); // Increment cursor
-    lcdcmd(0x80); // Set cursor position to 1st line, 1st column
+    lcdcmd(0x38);       // Configure the LCD in 8-bit mode, 2 line and 5x7 font
+    lcdcmd(0x0C);       // Display On and Cursor Off
+    lcdcmd(0x01);       // Clear display screen
+    lcdcmd(0x06);       // Increment cursor
+    lcdcmd(0x80);       // Set cursor position to 1st line, 1st column
 }
 
 void lcdcmd(unsigned char cmdout){
@@ -112,6 +112,7 @@ void lcddata(unsigned char dataout){
 
 unsigned char readKeyboard(int i){
     LATA = 0b00000000;
+    
     if(i == 0)
         LATA = 0b00000001;
     else if(i == 1)
@@ -131,7 +132,6 @@ unsigned char readKeyboard(int i){
         return findKey(i,3);
     else
         return ' ';
-    return ' ';
 }
 
 unsigned char findKey(unsigned short a, unsigned short b){

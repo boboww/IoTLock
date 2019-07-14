@@ -1,5 +1,9 @@
 #include <xc.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <pic18f45k50.h>
+
 #define _XTAL_FREQ 1000000
 
 #pragma config FOSC = INTOSCIO// Oscillator Selection bits (Internal oscillator, port
@@ -24,45 +28,50 @@ void lcd_ini();
 
 void lcdcmd(unsigned char);
 void lcddata(unsigned char);
-void MSDelay(unsigned int itime);
 void writeString(unsigned char sendData);
 
-unsigned char readKeyboard();
+unsigned char readKeyboard(int i);
 unsigned char findKey(unsigned short a, unsigned short b);
 
 unsigned char data[30]="Test";
 unsigned int i=0;
 
 void main(void) {
-    TRISA=0; // Configure Port D as output port
-    LATA=0;
-    PORTA=0;
-    //ADCON1 = 15;
-    TRISB=0x0F; // configure upper nibble PortB as output, lower nibble as input
-    LATB = 0;
-    PORTB = 0;
-    TRISC=0; // Configure Port C as output port
-    LATC=0;
-    PORTC=0; // Configure Port D as output port
-    TRISD = 0;
-    LATD = 0;
-    PORTD = 0;
-
-    lcd_ini(); // LCD initialization //
-    // write initial display message
+    TRISA   = 0x00;    // Configure Port A as output port
+    LATA    = 0x00;
+    PORTA   = 0x00;
+    TRISB   = 0xF0;    // configure Port B as input port
+    LATB    = 0x00;
+    PORTB   = 0x00;
+    TRISC   = 0x00;    // Configure Port C as output port
+    LATC    = 0x00;
+    PORTC   = 0x00; 
+    TRISD   = 0x00;    // Configure Port D as output port
+    LATD    = 0x00;
+    PORTD   = 0x00;
+    TRISE   = 0x00;    // Configure Port E as output port
+    LATE    = 0x00;
+    PORTE   = 0x00;
     
+    ANSELB  = 0x00;
+    
+    lcd_ini(); // LCD initialization //    
     unsigned char r;
-    TRISB = 0xF0;
-    TRISD = 0x00;
+    int i = 0;
     
     while(1){
-        // Main code execution here
-        // loop until button press is found
-        r = readKeyboard();
-        //if(r != ' ')
-            writeString(r);
+        //PORTBbits.RB3 = 0;
+        for(i = 0; i <= 4; i++){
+            if(i == 4){
+                i = 0;
+                break;
+            }
+            r = readKeyboard(i);
+            if(r != ' ')
+                writeString(r);
         //__delay_ms(500);
         //lcdcmd(0x01); // Clear display screen
+        }
     }
     return;
 }
@@ -75,7 +84,7 @@ void writeString(unsigned char sendData){
         lcddata(sendData);//[i]); // Call lcddata function to send characters
         // one by one from "data" array
         //i++;
-        __delay_ms(20);
+        __delay_ms(2000);
     //}
 }
 
@@ -103,76 +112,62 @@ void lcddata(unsigned char dataout){
     __delay_ms(1);
     en=0;
 }
-void MSDelay(unsigned int itime){
-    unsigned int i, j;
-    for(i=0;i<itime;i++){
-        for(j=0;j<10000;j++){
-        }
-    }
-}
 
-unsigned char readKeyboard(){
-    unsigned int i = 0;
-    
-    for(i=0;i<4;i++) {
-        if(i == 0)
-            PORTB = 1;
-        else if(i == 1)
-            PORTB = 2;
-        else if(i == 2)
-            PORTB = 4;
-        else if(i == 3)
-            PORTB = 8;
+unsigned char readKeyboard(int i){
+    if(i == 0)
+        LATB = 0b00000001;
+    else if(i == 1)
+        LATB = 0b00000010;
+    else if(i == 2)
+        LATB = 0b00000100;
+    else if(i == 3)
+        LATB = 0b00001000;    
 
-        if(PORTBbits.RB4)
-            return findKey(i,0);
-        if(PORTBbits.RB5)
-            return findKey(i,1);
-        if(PORTBbits.RB6)
-            return findKey(i,2);
-        if(PORTBbits.RB7)
-            return findKey(i,3);
-    }
+    if(PORTBbits.RB4)
+        return findKey(i,0);
+    else if(PORTBbits.RB5)
+        return findKey(i,1);
+    else if(PORTBbits.RB6)
+        return findKey(i,2);
+    if(PORTBbits.RB7)
+        return findKey(i,3);
+
     return ' ';
 }
 
 unsigned char findKey(unsigned short a, unsigned short b){
-    if(b == 0) {
-        if(a == 3)
-            return '*';
-        else if(a == 2)
-            return '7';
-        else if(a == 1)
-            return '4';
-        else if(a == 0)
-            return '1';
-    }else if(b == 1){
-        if(a == 3)
-            return '0';
-        else if(a == 2)
-            return '8';
-        else if(a == 1)
-            return '5';
-        else if(a == 0)
-            return '2';
-    }else if(b == 2){
-        if(a == 3)
-            return '#';
-        else if(a == 2)
-            return '9';
-        else if(a == 1)
-            return '6';
-        else if(a == 0)
-            return '3';
-    }else if(b == 3){
-        if(a == 3)
-            return 'D';
-        else if(a == 2)
-            return 'C';
-        else if(a == 1)
-            return 'B';
-        else if(a == 0)
-            return 'A';
-    }
-    return 'Z';
+    if(b == 0 && a == 3)
+        return '*';
+    else if(b == 0 && a == 2)
+        return '7';
+    else if(b == 0 && a == 1)
+        return '4';
+    else if(b == 0 && a == 0)
+        return '1';
+    else if(b == 1 && a == 1)
+        return '0';
+    else if(b == 1 && a == 2)
+        return '8';
+    else if(b == 1 && a == 1)
+        return '5';
+    else if(b == 1 && a == 0)
+        return '2';
+    else if(b == 2 && a == 3)
+        return '#';
+    else if(b == 2 && a == 2)
+        return '9';
+    else if(b == 2 && a == 1)
+        return '6';
+    else if(b == 2 && a == 0)
+        return '3';
+    else if(b == 3 && a == 3)
+        return 'D';
+    else if(b == 3 && a == 2)
+        return 'C';
+    else if(b == 3 && a == 1)
+        return 'B';
+    else if(b == 3 && a == 0)
+        return 'A';
+    else
+        return '_';
 }

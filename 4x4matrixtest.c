@@ -114,22 +114,22 @@ unsigned char readKeyboard(int i){
     LATA = 0b00000000;
     if(i == 0)
         LATA = 0b00000001;
-    if(i == 1)
+    else if(i == 1)
         LATA = 0b00000010;
-    if(i == 2)
+    else if(i == 2)
         LATA = 0b00000100;
-    if(i == 3)
+    else if(i == 3)
         LATA = 0b00001000;    
 
     if(PORTAbits.RA4 == 1)
         return findKey(i,0);
-    else if(PORTAbits.RA5 == 1)
+    if(PORTAbits.RA5 == 1)
         return findKey(i,1);
-    else if(PORTAbits.RA6 == 1)
+    if(PORTAbits.RA6 == 1)
         return findKey(i,2);
-    else if(PORTAbits.RA7 == 1)
+    if(PORTAbits.RA7 == 1)
         return findKey(i,3);
-    else if(LATA == 0b00000000)
+    else
         return ' ';
     return ' ';
 }
@@ -143,7 +143,7 @@ unsigned char findKey(unsigned short a, unsigned short b){
         return '4';
     else if(b == 0 && a == 0)
         return '1';
-    else if(b == 1 && a == 1)
+    else if(b == 1 && a == 3)
         return '0';
     else if(b == 1 && a == 2)
         return '8';

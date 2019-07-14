@@ -1,8 +1,8 @@
 #include <xc.h>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 #include <string.h>
-#include <pic18f45k50.h>
+//#include <pic18f45k50.h>
 
 #define _XTAL_FREQ 1000000
 
@@ -60,7 +60,7 @@ void main(void) {
     int i = 0;
     
     while(1){
-        //PORTBbits.RB3 = 0;
+        //PORTBbits.RB3 = 0;    
         for(i = 0; i <= 4; i++){
             if(i == 4){
                 i = 0;
@@ -114,6 +114,7 @@ void lcddata(unsigned char dataout){
 }
 
 unsigned char readKeyboard(int i){
+    LATB = 0b00000000;
     if(i == 0)
         LATB = 0b00000001;
     else if(i == 1)
@@ -123,13 +124,13 @@ unsigned char readKeyboard(int i){
     else if(i == 3)
         LATB = 0b00001000;    
 
-    if(PORTBbits.RB4)
+    if(PORTBbits.RB4 == 1)
         return findKey(i,0);
-    else if(PORTBbits.RB5)
+    else if(PORTBbits.RB5 == 1)
         return findKey(i,1);
-    else if(PORTBbits.RB6)
+    else if(PORTBbits.RB6 == 1)
         return findKey(i,2);
-    if(PORTBbits.RB7)
+    else if(PORTBbits.RB7 == 1)
         return findKey(i,3);
 
     return ' ';

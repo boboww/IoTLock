@@ -1,22 +1,17 @@
 #include <xc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pic18f45k50.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <pic18f45k50.h>
 
 #define _XTAL_FREQ 1000000
 
-#pragma config FOSC = INTOSCIO// Oscillator Selection bits (Internal oscillator, port
-//function on RA6, EC used by USB (INTIO))
+#pragma config FOSC = INTOSCIO// Oscillator Selection bits (Internal oscillator, port function on RA6, EC used by USB (INTIO))
 #pragma CONFIG DEBUG = ON;// Enable Debug Mode
-#pragma config WDTEN = OFF // Watchdog Timer Enable bit (WDT disabled (control is
-//placed on the SWDTEN bit))
-#pragma config PBADEN = OFF // PORTB A/D Enable bit (PORTB&lt;4:0&gt; pins are
-// configured as digital I/O on Reset)
-#pragma config MCLRE = ON // MCLR Pin Enable bit (MCLR pin enabled; RE3 input pin
-//disabled)
-#pragma config LVP = ON // Single-Supply ICSP Enable bit (Single-Supply ICSP
-//LCD Control pins
+#pragma config WDTEN = OFF // Watchdog Timer Enable bit (WDT disabled (control is placed on the SWDTEN bit))
+#pragma config PBADEN = OFF // PORTB A/D Enable bit (PORTB&lt;4:0&gt; pins are configured as digital I/O on Reset)
+#pragma config MCLRE = ON // MCLR Pin Enable bit (MCLR pin enabled; RE3 input pin disabled)
+#pragma config LVP = ON // Single-Supply ICSP Enable bit (Single-Supply ICSP LCD Control pins)
 
 #define rs PORTCbits.RC0        //LCD Control pins
 #define rw PORTCbits.RC1
@@ -56,7 +51,7 @@ void main(void) {
     ANSELA  = 0x00;     // RA5 column wasn't working for keypad
         
     lcd_ini();          // LCD initialization   
-    unsigned char r;
+    unsigned char r = ' ';
     int i = 0;
     
     while(1){    
@@ -65,8 +60,9 @@ void main(void) {
                 i = 0;
                 break;
             }
+            r = ' ';
             r = readKeyboard(i);
-            if(r != ' ')
+            //if(r != ' ')
                 writeString(r);
             //__delay_ms(500);
             //lcdcmd(0x01);     // Clear display screen
@@ -81,7 +77,7 @@ void writeString(unsigned char sendData){   // Writes string to LCD 1 byte at ti
         lcddata(sendData);//[i]);           // Call lcddata function to send characters
         // one by one from "data" array
         //i++;
-        //__delay_ms(20);
+        __delay_ms(200);
     //}
 }
 
@@ -112,6 +108,7 @@ void lcddata(unsigned char dataout){
 
 unsigned char readKeyboard(int i){
     LATA = 0b00000000;
+    PORTA = 0x00000000;
     
     if(i == 0)
         LATA = 0b00000001;

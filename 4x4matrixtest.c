@@ -1,8 +1,8 @@
 #include <xc.h>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <pic18f45k50.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pic18f45k50.h>
 
 #define _XTAL_FREQ 1000000
 
@@ -23,12 +23,14 @@ void lcd_ini();
 
 void lcdcmd(unsigned char);
 void lcddata(unsigned char);
-void writeString(unsigned char sendData);
+void writeChar(unsigned char sendData);
+void writeString(unsigned char sendData[]);
 
 unsigned char readKeyboard(int i);
 unsigned char findKey(unsigned short a, unsigned short b);
 
-unsigned char data[30]="Test";
+unsigned char data[30]="";
+unsigned char data1[30]=" Motor Speed:";
 unsigned int i=0;
 
 void main(void) {
@@ -53,40 +55,66 @@ void main(void) {
     lcd_ini();          // LCD initialization   
     unsigned char r = ' ';
     int i = 0;
+    int j = 0;
     
     while(1){    
-        for(i = 0; i <= 4; i++){
+        j = 0;   
+        
+        for(i = 0; i <= 4; i++){    
             if(i == 4){
                 i = 0;
                 break;
             }
-            r = ' ';
+            //r = ' ';
             r = readKeyboard(i);
-            if(r != ' ')
-                writeString(r);
-            //__delay_ms(500);
-            //lcdcmd(0x01);     // Clear display screen
+            if(r != ' '){
+                writeChar(r);
+                __delay_ms(700);
+            }
+        }      
+        data[j] = r;
+        j++;
+        
+        if(r == 'D'){
+            lcdcmd(0b00000001);         // Clear display screen
+            writeString(data1);         // Write "Motor Speed:"
+            lcdcmd(0b11000000);         // LCD row 2, column 1
+            writeString(data);          // Write data          
+            lcdcmd(0b10000000);         // LCD row 1, column 1
+            //break;
+        }if(r == 'C'){
+            lcdcmd(0b00000001);         // Clear display screen
         }
+
+//        for(i = 0; r != 'D'; i++){
+//            data[i] = r;
+//        }
+//        lcdcmd(0b11000000);
+//        writeString(data);
     }
     return;
 }
 
-void writeString(unsigned char sendData){   // Writes string to LCD 1 byte at time
-    unsigned int i = 0;
-    //while(sendData[i]!='\0'){
-        lcddata(sendData);//[i]);           // Call lcddata function to send characters
-        // one by one from "data" array
-        //i++;
-        //__delay_ms(200);
-    //}
+void writeChar(unsigned char sendData){   // Writes string to LCD 1 byte at time
+    lcddata(sendData);
+}
+
+void writeString(unsigned char sendData[]){   // Writes string to LCD 1 byte at time
+    int i = 0;
+    while(sendData[i] != '\0'){
+        lcddata(sendData[i]);           // Call lcddata function to send characters one by one from "data" array
+        i++;
+        __delay_ms(20);
+    }
 }
 
 void lcd_ini(){
-    lcdcmd(0x38);       // Configure the LCD in 8-bit mode, 2 line and 5x7 font
-    lcdcmd(0x0C);       // Display On and Cursor Off
-    lcdcmd(0x01);       // Clear display screen
-    lcdcmd(0x06);       // Increment cursor
-    lcdcmd(0x80);       // Set cursor position to 1st line, 1st column
+    __delay_ms(15);
+    lcdcmd(0b00111000);       // Configure the LCD in 8-bit mode, 2 line and 5x7 font
+    lcdcmd(0b00000001);       // Clear display screen
+    lcdcmd(0b00001101);       // Display On and Cursor Off
+    lcdcmd(0b00000110);       // Increment cursor
+    lcdcmd(0b10000000);       // Set cursor position to 1st line, 1st column
 }
 
 void lcdcmd(unsigned char cmdout){
@@ -109,61 +137,64 @@ void lcddata(unsigned char dataout){
 unsigned char readKeyboard(int i){
     LATA = 0b00000000;
     PORTA = 0x00000000;
-    
-    if(i == 0)
+        
+    if(i == 0){
         LATA = 0b00000001;
-    else if(i == 1)
+    }if(i == 1){
         LATA = 0b00000010;
-    else if(i == 2)
+    }if(i == 2){
         LATA = 0b00000100;
-    else if(i == 3)
+    }if(i == 3){
         LATA = 0b00001000;    
-
-    if(PORTAbits.RA4 == 1)
+    }    
+    
+    if(PORTAbits.RA4 == 1){
         return findKey(i,0);
-    if(PORTAbits.RA5 == 1)
+    }if(PORTAbits.RA5 == 1){
         return findKey(i,1);
-    if(PORTAbits.RA6 == 1)
+    }if(PORTAbits.RA6 == 1){
         return findKey(i,2);
-    if(PORTAbits.RA7 == 1)
+    }if(PORTAbits.RA7 == 1){
         return findKey(i,3);
-    else
+    }else{
         return ' ';
+    }
 }
 
 unsigned char findKey(unsigned short a, unsigned short b){
-    if(b == 0 && a == 3)
+    if(b == 0 && a == 3){
         return '*';
-    else if(b == 0 && a == 2)
+    }if(b == 0 && a == 2){
         return '7';
-    else if(b == 0 && a == 1)
+    }if(b == 0 && a == 1){
         return '4';
-    else if(b == 0 && a == 0)
+    }if(b == 0 && a == 0){
         return '1';
-    else if(b == 1 && a == 3)
+    }if(b == 1 && a == 3){
         return '0';
-    else if(b == 1 && a == 2)
+    }if(b == 1 && a == 2){
         return '8';
-    else if(b == 1 && a == 1)
+    }if(b == 1 && a == 1){
         return '5';
-    else if(b == 1 && a == 0)
+    }if(b == 1 && a == 0){
         return '2';
-    else if(b == 2 && a == 3)
+    }if(b == 2 && a == 3){
         return '#';
-    else if(b == 2 && a == 2)
+    }if(b == 2 && a == 2){
         return '9';
-    else if(b == 2 && a == 1)
+    }if(b == 2 && a == 1){
         return '6';
-    else if(b == 2 && a == 0)
+    }if(b == 2 && a == 0){
         return '3';
-    else if(b == 3 && a == 3)
+    }if(b == 3 && a == 3){
         return 'D';
-    else if(b == 3 && a == 2)
+    }if(b == 3 && a == 2){
         return 'C';
-    else if(b == 3 && a == 1)
+    }if(b == 3 && a == 1){
         return 'B';
-    else if(b == 3 && a == 0)
+    }if(b == 3 && a == 0){
         return 'A';
-    else
+    }else{
         return '_';
+    }
 }

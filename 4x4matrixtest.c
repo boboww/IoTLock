@@ -37,10 +37,10 @@ unsigned char data[30]="Test";
 unsigned int i=0;
 
 void main(void) {
-    TRISA   = 0x00;    // Configure Port A as output port
+    TRISA   = 0xF0;    // Configure Port A as output port
     LATA    = 0x00;
     PORTA   = 0x00;
-    TRISB   = 0xF0;    // configure Port B as input port
+    TRISB   = 0x00;    // configure Port B as input port
     LATB    = 0x00;
     PORTB   = 0x00;
     TRISC   = 0x00;    // Configure Port C as output port
@@ -52,15 +52,12 @@ void main(void) {
     TRISE   = 0x00;    // Configure Port E as output port
     LATE    = 0x00;
     PORTE   = 0x00;
-    
-    ANSELB  = 0x00;
-    
+        
     lcd_ini(); // LCD initialization //    
     unsigned char r;
     int i = 0;
     
-    while(1){
-        //PORTBbits.RB3 = 0;    
+    while(1){    
         for(i = 0; i <= 4; i++){
             if(i == 4){
                 i = 0;
@@ -84,7 +81,7 @@ void writeString(unsigned char sendData){
         lcddata(sendData);//[i]); // Call lcddata function to send characters
         // one by one from "data" array
         //i++;
-        __delay_ms(2000);
+        __delay_ms(20);
     //}
 }
 
@@ -114,25 +111,26 @@ void lcddata(unsigned char dataout){
 }
 
 unsigned char readKeyboard(int i){
-    LATB = 0b00000000;
+    LATA = 0b00000000;
     if(i == 0)
-        LATB = 0b00000001;
-    else if(i == 1)
-        LATB = 0b00000010;
-    else if(i == 2)
-        LATB = 0b00000100;
-    else if(i == 3)
-        LATB = 0b00001000;    
+        LATA = 0b00000001;
+    if(i == 1)
+        LATA = 0b00000010;
+    if(i == 2)
+        LATA = 0b00000100;
+    if(i == 3)
+        LATA = 0b00001000;    
 
-    if(PORTBbits.RB4 == 1)
+    if(PORTAbits.RA4 == 1)
         return findKey(i,0);
-    else if(PORTBbits.RB5 == 1)
+    else if(PORTAbits.RA5 == 1)
         return findKey(i,1);
-    else if(PORTBbits.RB6 == 1)
+    else if(PORTAbits.RA6 == 1)
         return findKey(i,2);
-    else if(PORTBbits.RB7 == 1)
+    else if(PORTAbits.RA7 == 1)
         return findKey(i,3);
-
+    else if(LATA == 0b00000000)
+        return ' ';
     return ' ';
 }
 

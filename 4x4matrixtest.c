@@ -62,7 +62,7 @@ void main(void) {
             }
             r = ' ';
             r = readKeyboard(i);
-            //if(r != ' ')
+            if(r != ' ')
                 writeString(r);
             //__delay_ms(500);
             //lcdcmd(0x01);     // Clear display screen
@@ -77,7 +77,7 @@ void writeString(unsigned char sendData){   // Writes string to LCD 1 byte at ti
         lcddata(sendData);//[i]);           // Call lcddata function to send characters
         // one by one from "data" array
         //i++;
-        __delay_ms(200);
+        //__delay_ms(200);
     //}
 }
 

@@ -24,14 +24,17 @@ void lcd_ini();
 void lcdcmd(unsigned char);
 void lcddata(unsigned char);
 void writeChar(unsigned char sendData);
+void writeInt(unsigned int sendData);
 void writeString(unsigned char sendData[]);
 
 unsigned char readKeyboard(int i);
 unsigned char findKey(unsigned short a, unsigned short b);
 
-unsigned char data[30]="";
-unsigned char data1[30]=" Motor Speed:";
-unsigned int i=0;
+unsigned char data[10] = "";
+unsigned char string1[16] = " Motor Speed:";
+unsigned int i = 0;
+unsigned char test1[10] = "";
+
 
 void main(void) {
     TRISA   = 0xF0;         // Configure Port A as output/input
@@ -53,38 +56,53 @@ void main(void) {
     ANSELA  = 0x00;     // RA5 column wasn't working for keypad
         
     lcd_ini();          // LCD initialization   
+    
     unsigned char r = ' ';
     int i = 0;
     int j = 0;
+    int k = 0;
+    int num = 0;
     
-    while(1){    
-        j = 0;   
-        
-        for(i = 0; i <= 4; i++){    
+    while(1){            
+        for(i = 0; i <= 4; i++){
             if(i == 4){
                 i = 0;
                 break;
             }
-            //r = ' ';
-            r = readKeyboard(i);
+            r = ' ';
+//        test();
+        
+        
+            r = readKeyboard(i);            // read keypad when not space
             if(r != ' '){
                 writeChar(r);
+                data[j] = r;
+                j++;  
                 __delay_ms(700);
             }
-        }      
-        data[j] = r;
-        j++;
         
-        if(r == 'D'){
-            lcdcmd(0b00000001);         // Clear display screen
-            writeString(data1);         // Write "Motor Speed:"
-            lcdcmd(0b11000000);         // LCD row 2, column 1
-            writeString(data);          // Write data          
-            lcdcmd(0b10000000);         // LCD row 1, column 1
-            //break;
-        }if(r == 'C'){
-            lcdcmd(0b00000001);         // Clear display screen
-        }
+            if(r == 'D'){
+                data[j-1] = '\0';
+                lcdcmd(0b00000001);         // Clear display screen
+                writeString(string1);       // Write "Motor Speed:"
+                lcdcmd(0b11000000);         // LCD row 2, column 1
+                writeString(data);          // Write data     
+                
+                __delay_ms(2000);
+                lcdcmd(0b00000001);         // Clear display screen
+                num = atoi(data);           // num is int for motor values (converted from keypad)
+                                        
+                lcdcmd(0b10000000);         // LCD row 1, column 1
+                j = 0;                
+                *data = '\0';
+                //break;
+            }if(r == 'C'){
+                j = 0;
+                lcdcmd(0b00000001);         // Clear display screen                
+                *data = '\0';
+            }
+        }      
+
 
 //        for(i = 0; r != 'D'; i++){
 //            data[i] = r;
@@ -133,7 +151,7 @@ void lcddata(unsigned char dataout){
     __delay_ms(1);
     en=0;
 }
-
+            
 unsigned char readKeyboard(int i){
     LATA = 0b00000000;
     PORTA = 0x00000000;

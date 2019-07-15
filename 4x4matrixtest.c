@@ -6,20 +6,20 @@
 
 #define _XTAL_FREQ 1000000
 
-#pragma config FOSC = INTOSCIO// Oscillator Selection bits (Internal oscillator, port function on RA6, EC used by USB (INTIO))
-#pragma CONFIG DEBUG = ON;// Enable Debug Mode
-#pragma config WDTEN = OFF // Watchdog Timer Enable bit (WDT disabled (control is placed on the SWDTEN bit))
-#pragma config PBADEN = OFF // PORTB A/D Enable bit (PORTB&lt;4:0&gt; pins are configured as digital I/O on Reset)
-#pragma config MCLRE = ON // MCLR Pin Enable bit (MCLR pin enabled; RE3 input pin disabled)
-#pragma config LVP = ON // Single-Supply ICSP Enable bit (Single-Supply ICSP LCD Control pins)
+#pragma config FOSC = INTOSCIO      // Oscillator Selection bits (Internal oscillator, port function on RA6, EC used by USB (INTIO))
+#pragma CONFIG DEBUG = ON;          // Enable Debug Mode
+#pragma config WDTEN = OFF          // Watchdog Timer Enable bit (WDT disabled (control is placed on the SWDTEN bit))
+#pragma config PBADEN = OFF         // PORTB A/D Enable bit (PORTB&lt;4:0&gt; pins are configured as digital I/O on Reset)
+#pragma config MCLRE = ON           // MCLR Pin Enable bit (MCLR pin enabled; RE3 input pin disabled)
+#pragma config LVP = ON             // Single-Supply ICSP Enable bit (Single-Supply ICSP LCD Control pins)
 
-#define rs PORTCbits.RC0        //LCD Control pins
+#define rs PORTCbits.RC0            // LCD Control pins
 #define rw PORTCbits.RC1
 #define en PORTCbits.RC2
 
-#define lcdport PORTD           //LCD Data pins
+#define lcdport PORTD               // LCD Data pins
 
-void lcd_ini();
+void lcd_ini();                     // Function prototypes
 
 void lcdcmd(unsigned char);
 void lcddata(unsigned char);
@@ -27,13 +27,14 @@ void writeChar(unsigned char sendData);
 void writeInt(unsigned int sendData);
 void writeString(unsigned char sendData[]);
 
-unsigned char readKeyboard(int i);
-unsigned char findKey(unsigned short a, unsigned short b);
+unsigned char readKeypad(int i);
+unsigned char lookup(unsigned short a, unsigned short b);
 
-unsigned char data[10] = "";
+unsigned char data[10] = "";        // Global variables
 unsigned char string1[16] = " Motor Speed:";
 unsigned int i = 0;
 unsigned char test1[10] = "";
+unsigned char percent = '%';
 
 
 void main(void) {
@@ -53,9 +54,9 @@ void main(void) {
     LATE    = 0x00;
     PORTE   = 0x00;
     
-    ANSELA  = 0x00;     // RA5 column wasn't working for keypad
+    ANSELA  = 0x00;         // RA5 column wasn't working for keypad
         
-    lcd_ini();          // LCD initialization   
+    lcd_ini();              // LCD initialization   
     
     unsigned char r = ' ';
     int i = 0;
@@ -69,74 +70,62 @@ void main(void) {
                 i = 0;
                 break;
             }
-            r = ' ';
-//        test();
-        
-        
-            r = readKeyboard(i);            // read keypad when not space
+            r = ' ';     
+            r = readKeypad(i);            // Read keypad when not space
             if(r != ' '){
                 writeChar(r);
-                data[j] = r;
+                data[j] = r;                // Copy keypad input into char array data
                 j++;  
-                __delay_ms(700);
+                __delay_ms(700);            // Delay to stop repeated key presses
             }
         
-            if(r == 'D'){
+            if(r == 'D'){                   // If press button D
                 data[j-1] = '\0';
                 lcdcmd(0b00000001);         // Clear display screen
                 writeString(string1);       // Write "Motor Speed:"
                 lcdcmd(0b11000000);         // LCD row 2, column 1
                 writeString(data);          // Write data     
+                writeChar(percent);         // Write "Motor Speed:"
                 
-                __delay_ms(2000);
-                lcdcmd(0b00000001);         // Clear display screen
                 num = atoi(data);           // num is int for motor values (converted from keypad)
                                         
                 lcdcmd(0b10000000);         // LCD row 1, column 1
                 j = 0;                
                 *data = '\0';
-                //break;
-            }if(r == 'C'){
+            }if(r == 'C'){                  // If press D
                 j = 0;
                 lcdcmd(0b00000001);         // Clear display screen                
                 *data = '\0';
             }
         }      
-
-
-//        for(i = 0; r != 'D'; i++){
-//            data[i] = r;
-//        }
-//        lcdcmd(0b11000000);
-//        writeString(data);
     }
     return;
 }
 
-void writeChar(unsigned char sendData){   // Writes string to LCD 1 byte at time
+void writeChar(unsigned char sendData){         // Writes string to LCD 1 byte at time
     lcddata(sendData);
 }
 
-void writeString(unsigned char sendData[]){   // Writes string to LCD 1 byte at time
+void writeString(unsigned char sendData[]){     // Writes string to LCD 1 byte at time
     int i = 0;
     while(sendData[i] != '\0'){
-        lcddata(sendData[i]);           // Call lcddata function to send characters one by one from "data" array
-        i++;
-        __delay_ms(20);
+        lcddata(sendData[i]);                   // Call lcddata function to send characters 
+        i++;                                    // one by one from char array
+        //__delay_ms(20);
     }
 }
 
 void lcd_ini(){
     __delay_ms(15);
-    lcdcmd(0b00111000);       // Configure the LCD in 8-bit mode, 2 line and 5x7 font
-    lcdcmd(0b00000001);       // Clear display screen
-    lcdcmd(0b00001101);       // Display On and Cursor Off
-    lcdcmd(0b00000110);       // Increment cursor
-    lcdcmd(0b10000000);       // Set cursor position to 1st line, 1st column
+    lcdcmd(0b00111000);         // Configure the LCD in 8-bit mode, 2 line and 5x7 font
+    lcdcmd(0b00000001);         // Clear display screen
+    lcdcmd(0b00001101);         // Display On and Cursor Off
+    lcdcmd(0b00000110);         // Increment cursor
+    lcdcmd(0b10000000);         // Set cursor position to 1st line, 1st column
 }
 
 void lcdcmd(unsigned char cmdout){
-    lcdport=cmdout; //Send command to lcdport=PORTB
+    lcdport=cmdout;             //Send command to LCD
     rs=0;
     rw=0;
     en=1;
@@ -144,7 +133,7 @@ void lcdcmd(unsigned char cmdout){
     en=0;
 }
 void lcddata(unsigned char dataout){
-    lcdport=dataout; //Send data to lcdport=PORTB
+    lcdport=dataout;            // Send data to LCD
     rs=1;
     rw=0;
     en=1;
@@ -152,12 +141,12 @@ void lcddata(unsigned char dataout){
     en=0;
 }
             
-unsigned char readKeyboard(int i){
-    LATA = 0b00000000;
-    PORTA = 0x00000000;
+unsigned char readKeypad(int i){
+    LATA = 0b00000000;          // Clear Latch A
+    PORTA = 0x00000000;         // Clear PORTB
         
-    if(i == 0){
-        LATA = 0b00000001;
+    if(i == 0){                 // Check for loop from main for i values
+        LATA = 0b00000001;      // Set Columns high when i value matches
     }if(i == 1){
         LATA = 0b00000010;
     }if(i == 2){
@@ -166,21 +155,21 @@ unsigned char readKeyboard(int i){
         LATA = 0b00001000;    
     }    
     
-    if(PORTAbits.RA4 == 1){
-        return findKey(i,0);
+    if(PORTAbits.RA4 == 1){     // Check for row high
+        return lookup(i,0);     // If high, lookup press in lookup table
     }if(PORTAbits.RA5 == 1){
-        return findKey(i,1);
+        return lookup(i,1);
     }if(PORTAbits.RA6 == 1){
-        return findKey(i,2);
+        return lookup(i,2);
     }if(PORTAbits.RA7 == 1){
-        return findKey(i,3);
+        return lookup(i,3);
     }else{
         return ' ';
     }
 }
 
-unsigned char findKey(unsigned short a, unsigned short b){
-    if(b == 0 && a == 3){
+unsigned char lookup(unsigned short a, unsigned short b){
+    if(b == 0 && a == 3){       // Lookup table for row/column combinations
         return '*';
     }if(b == 0 && a == 2){
         return '7';

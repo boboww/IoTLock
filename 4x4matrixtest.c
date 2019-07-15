@@ -1,10 +1,8 @@
 #include <xc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
 #include <pic18f45k50.h>
-
-#define _XTAL_FREQ 1000000
 
 #pragma config FOSC = INTOSCIO      // Oscillator Selection bits (Internal oscillator, port function on RA6, EC used by USB (INTIO))
 #pragma CONFIG DEBUG = ON;          // Enable Debug Mode
@@ -12,6 +10,8 @@
 #pragma config PBADEN = OFF         // PORTB A/D Enable bit (PORTB&lt;4:0&gt; pins are configured as digital I/O on Reset)
 #pragma config MCLRE = ON           // MCLR Pin Enable bit (MCLR pin enabled; RE3 input pin disabled)
 #pragma config LVP = ON             // Single-Supply ICSP Enable bit (Single-Supply ICSP LCD Control pins)
+
+#define _XTAL_FREQ 1000000
 
 #define rs PORTCbits.RC0            // LCD Control pins
 #define rw PORTCbits.RC1

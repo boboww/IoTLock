@@ -1,3 +1,3 @@
 # IoTLock
 
-Click [HERE](https://github.com/bowuu/IoTLock) for code!
+## Click [HERE](https://github.com/bowuu/IoTLock) for code!
